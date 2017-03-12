@@ -10,19 +10,25 @@ import { AuthService } from "./auth/auth.service";
 import { ErrorComponent } from "./errors/error.component";
 import { ErrorService } from "./errors/error.service";
 import { MessageModule } from "./messages/message.module";
+import {AuthModule} from "./auth/auth.module";
+import {HomeComponent} from "./home/home.component";
+import {GameOfLifeComponent} from "./gameOfLife/game-of-life.component";
 
 @NgModule({
     declarations: [
         AppComponent,
         AuthenticationComponent,
         HeaderComponent,
-        ErrorComponent
+        ErrorComponent,
+        HomeComponent,
+        GameOfLifeComponent
     ],
     imports: [
         BrowserModule,
         routing,
         HttpModule,
-        MessageModule
+        MessageModule,
+        AuthModule
     ],
     providers: [AuthService, ErrorService],
     bootstrap: [AppComponent]

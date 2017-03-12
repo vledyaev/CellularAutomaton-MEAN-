@@ -25,3 +25,9 @@ a.danger {
 input.ng-invalid.ng-touched {
   border: 1px solid red;
 }
+
+.footer {
+  position:fixed;
+  bottom: 0;
+  width: 100%;
+}
