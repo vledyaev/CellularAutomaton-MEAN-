@@ -212,6 +212,33 @@ export class GameOfLifeComponent implements  OnInit{
         }
     }
 
+    switchTrail(){
+        this.trail.current = !this.trail.current;
+        if (this.isRunning) {
+            this.trail.schedule = true;
+        } else {
+            this.drawWorld();
+        }
+    }
+
+    switchGrid() {
+        this.grid.current = (this.grid.current + 1) % this.grid.schemes.length;
+        if (this.isRunning) {
+            this.grid.schedule = true; // Delay redraw
+        } else {
+            this.drawWorld(); // Force complete redraw
+        }
+    }
+
+    switchColors() {
+        this.colors.current = (this.colors.current + 1) % this.colors.schemes.length;
+        if (this.isRunning) {
+            this.colors.schedule = true; // Delay redraw
+        } else {
+            this.drawWorld(); // Force complete redraw
+        }
+    }
+
     loadState() {
 
         // var state, i, j, y, s = this.helpers.getUrlParameter('s');
