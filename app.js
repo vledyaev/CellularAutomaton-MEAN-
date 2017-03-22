@@ -38,7 +38,11 @@ app.use('/', appRoutes);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    return res.render('index');
+    if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+        next();
+    }else {
+        return res.render('index');
+    }
 });
 
 
