@@ -17,7 +17,9 @@ const APP_ROUTES: Routes = [
     { path: 'signin', component: SigninComponent },
     { path: 'logout', component: LogoutComponent },
     { path: 'home', component: HomeComponent},
-    { path: 'automaton', component: GameOfLifeComponent},
+    { path: 'automaton/:id', component: GameOfLifeComponent },
+    { path: 'automaton', component: GameOfLifeComponent}
+
 ];
 
 export const routing = RouterModule.forRoot(APP_ROUTES);

@@ -21,7 +21,7 @@ import {GameOfLifeComponent} from "./gameOfLife/game-of-life.component";
         HeaderComponent,
         ErrorComponent,
         HomeComponent,
-        GameOfLifeComponent
+        GameOfLifeComponent,
     ],
     imports: [
         BrowserModule,
@@ -30,8 +30,8 @@ import {GameOfLifeComponent} from "./gameOfLife/game-of-life.component";
         MessageModule,
         AuthModule
     ],
-    providers: [AuthService, ErrorService],
-    bootstrap: [AppComponent]
+    providers: [AuthService, ErrorService,GOLConfigurationService],
+    bootstrap: [AppComponent],
 })
 export class AppModule {
 
