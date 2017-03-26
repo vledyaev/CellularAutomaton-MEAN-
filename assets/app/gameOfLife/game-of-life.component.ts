@@ -1,12 +1,35 @@
 
 import {Component, OnInit, ViewChild} from "@angular/core";
 import {ListLife} from "./listLife";
+import {GOLConfigurationService} from "./gol-configuration.service";
+import {BSModalContext, Modal} from "angular2-modal/plugins/bootstrap";
+import { SaveConfigurationComponent } from './save-configuration.component';
+import {overlayConfigFactory} from "angular2-modal";
+import {OVERLAY_PROVIDERS} from "@angular/material";
+import {ActivatedRoute} from "@angular/router";
 
 @Component({
     selector: 'app-automaton',
-    templateUrl: './game-of-life.component.html'
+    templateUrl: './game-of-life.component.html',
+    providers: [Modal,OVERLAY_PROVIDERS]
 })
 export class GameOfLifeComponent implements  OnInit{
+
+    //<editor-fold desc="Properties">
+
+    name: string;
+    description: string;
+    id: string;
+
+    isEditMode: boolean = false;
+
+    context : CanvasRenderingContext2D;
+    width : number = null;
+    height : number = null;
+    age : number[][] = null;
+    cellSize : number = null;
+    cellSpace : number = null;
+
     columnsCount:number = 0;
     rowsCount:number = 0;
 
@@ -30,19 +53,9 @@ export class GameOfLifeComponent implements  OnInit{
         gui : 0
     };
 
-    // DOM elements
-    element : {
-        generation : null,
-        steptime : null,
-        livecells : null,
-        hint : null,
-        messages : {
-            layout : null
-        }
-    };
 
     // Initial state
-    initialState : '[{"39":[110]},{"40":[112]},{"41":[109,110,113,114,115]}]';
+    initialState : number[][] = [[39,110],[40,112],[41,109,110,113,114,115]];
 
     // Trail state
     trail : TrailState = {
@@ -71,12 +84,10 @@ export class GameOfLifeComponent implements  OnInit{
             {
                 color : '' // Special case: 0px grid
             }
-            ],
+        ],
 
         schedule: false
     };
-
-
 
     // Zoom level
     zoom : Zoom  = {
@@ -102,7 +113,7 @@ export class GameOfLifeComponent implements  OnInit{
                 rows : 216,
                 cellSize : 1
             }
-            ]
+        ]
     };
 
     colors : CellColors ={
@@ -137,6 +148,29 @@ export class GameOfLifeComponent implements  OnInit{
     canvas: any;
 
     listLife: ListLife;
+    //</editor-fold>
+
+
+
+    //<editor-fold desc="Saving">
+
+    saveConfiguration(){
+        return this.modal.open(SaveConfigurationComponent, overlayConfigFactory({ state: this.listLife.actualState, name:"", description:""}, BSModalContext))
+            .then(dialog => dialog.result)
+            .then(result => {
+                if(result){
+                    this.isEditMode=true;
+                    this.name = result.name;
+                    this.description = result.description;
+                    console.log(result);
+                }
+            });
+    }
+
+
+    //</editor-fold>
+
+    constructor(public golConfigurationService: GOLConfigurationService,public modal: Modal, private route: ActivatedRoute){}
 
     ngOnInit(){
         try {
@@ -148,15 +182,39 @@ export class GameOfLifeComponent implements  OnInit{
             this.columnsCount = this.zoom.schemes[this.zoom.current].columns;
             this.cellSpace = 1;
             this.listLife = new ListLife();   // Reset/init algorithm
+            this.route.params.subscribe(params => {
+                this.id = params['id']; // (+) converts string 'id' to a number
+                if(this.id){
+                    this.isEditMode = true;
+                    this.golConfigurationService.getConfiguration(this.id).subscribe(
+                        result =>{
+                            this.loadState(JSON.parse(result.obj.state));
+                            this.name = result.obj.name;
+                            this.description = result.obj.description;
+                            console.log(result);
+                            this.prepare();
+                        });
+                }else{
+                    this.clearWorld();
+                    console.log("prepared");
+                    this.prepare();
+                }
+            });
             //this.loadConfig();      // Load config from URL (autoplay, colors, zoom, ...)
             //this.loadState();       // Load state from URL
-            this.clearWorld();
-            //this.canvas.init();     // Init canvas GUI
-            //this.registerEvents();  // Register event handlers
-
-            this.prepare();
         } catch (e) {
             alert("Error: "+e);
+        }
+    }
+
+    loadState(state: number[][]){
+        let i, j, y;
+        for (i = 0; i < state.length; i++) {
+            for (j = 1; j < state[i].length; j++) {
+                console.log(state[i][j]);
+                console.log(state[i][0]);
+                this.listLife.addCell(state[i][j], state[i][0],this.listLife.actualState);
+            }
         }
     }
 
@@ -165,7 +223,6 @@ export class GameOfLifeComponent implements  OnInit{
     private mouseDown: boolean;
 
     onCanvasMouseDown(event: any) {
-        console.log(event);
         let position = this.mousePosition(event);
         this.switchCell(position[0], position[1]);
         this.lastX = position[0];
@@ -239,29 +296,6 @@ export class GameOfLifeComponent implements  OnInit{
         }
     }
 
-    loadState() {
-
-        // var state, i, j, y, s = this.helpers.getUrlParameter('s');
-        //
-        // if ( s === 'random') {
-        //     this.randomState();
-        // } else {
-        //     if (s == undefined) {
-        //         s = this.initialState;
-        //     }
-        //
-        //     state = jsonParse(decodeURI(s));
-        //
-        //     for (i = 0; i < state.length; i++) {
-        //         for (y in state[i]) {
-        //             for (j = 0 ; j < state[i][y].length ; j++) {
-        //                 this.listLife.addCell(state[i][y][j], parseInt(y, 10), this.listLife.actualState);
-        //             }
-        //         }
-        //     }
-        // }
-    }
-
 
 
 
@@ -296,13 +330,6 @@ export class GameOfLifeComponent implements  OnInit{
         // this.rows = this.zoom.schemes[this.zoom.current].rows;
         // this.columns = this.zoom.schemes[this.zoom.current].columns;
     }
-
-    context : CanvasRenderingContext2D;
-    width : number = null;
-    height : number = null;
-    age : number[][] = null;
-    cellSize : number = null;
-    cellSpace : number = null;
 
     clearWorld() {
         var i, j;
@@ -507,6 +534,8 @@ export class GameOfLifeComponent implements  OnInit{
         }
     }
 
+
+
     mousePosition(e) {
         // http://www.malleus.de/FAQ/getImgMousePos.html
         // http://www.quirksmode.org/js/events_properties.html#position
@@ -593,367 +622,3 @@ interface CellColorsScheme{
     trail: string[],
     alive: string[]
 }
-
-// (function () {
-//
-//     var GOL = {
-//
-//
-//
-//         /**
-//          * Load config from URL
-//          */
-//
-//
-//
-//         /**
-//          * Load world state from URL parameter
-//          */
-//
-//
-//
-//         /**
-//          * Create a random pattern
-//          */
-//         // randomState : function() {
-//         //     var i, liveCells = (this.rows * this.columns) * 0.12;
-//         //
-//         //     for (i = 0; i < liveCells; i++) {
-//         //         this.listLife.addCell(this.helpers.random(0, this.columns - 1), this.helpers.random(0, this.rows - 1), this.listLife.actualState);
-//         //     }
-//         //
-//         //     this.listLife.nextGeneration();
-//         // },
-//
-//         /**
-//          * keepDOMElements
-//          * Save DOM references for this session (one time execution)
-//          */
-//         keepDOMElements : function() {
-//             this.element.generation = document.getElementById('generation');
-//             this.element.steptime = document.getElementById('steptime');
-//             this.element.livecells = document.getElementById('livecells');
-//             this.element.messages.layout = document.getElementById('layoutMessages');
-//             this.element.hint = document.getElementById('hint');
-//         },
-//
-//
-//         /**
-//          * registerEvents
-//          * Register event handlers for this session (one time execution)
-//          */
-//         registerEvents : function() {
-//
-//             // Keyboard Events
-//             this.helpers.registerEvent(document.body, 'keyup', this.handlers.keyboard, false);
-//
-//             // Controls
-//             this.helpers.registerEvent(document.getElementById('buttonRun'), 'click', this.handlers.buttons.run, false);
-//             this.helpers.registerEvent(document.getElementById('buttonStep'), 'click', this.handlers.buttons.step, false);
-//             this.helpers.registerEvent(document.getElementById('buttonClear'), 'click', this.handlers.buttons.clear, false);
-//             this.helpers.registerEvent(document.getElementById('buttonExport'), 'click', this.handlers.buttons.export_, false);
-//
-//             // Layout
-//             this.helpers.registerEvent(document.getElementById('buttonTrail'), 'click', this.handlers.buttons.trail, false);
-//             this.helpers.registerEvent(document.getElementById('buttonGrid'), 'click', this.handlers.buttons.grid, false);
-//             this.helpers.registerEvent(document.getElementById('buttonColors'), 'click', this.handlers.buttons.colors, false);
-//         },
-//
-//
-//
-//         /** ****************************************************************************************************************************
-//          * Event Handerls
-//          */
-//         handlers : {
-//
-//             mouseDown : false,
-//             lastX : 0,
-//             lastY : 0,
-//
-//
-//             /**
-//              *
-//              */
-//             canvasMouseDown : function(event) {
-//                 var position = GOL.helpers.mousePosition(event);
-//                 GOL.canvas.switchCell(position[0], position[1]);
-//                 GOL.handlers.lastX = position[0];
-//                 GOL.handlers.lastY = position[1];
-//                 GOL.handlers.mouseDown = true;
-//             },
-//
-//
-//             /**
-//              *
-//              */
-//             canvasMouseUp : function() {
-//                 GOL.handlers.mouseDown = false;
-//             },
-//
-//
-//             /**
-//              *
-//              */
-//             canvasMouseMove : function(event) {
-//                 if (GOL.handlers.mouseDown) {
-//                     var position = GOL.helpers.mousePosition(event);
-//                     if ((position[0] !== GOL.handlers.lastX) || (position[1] !== GOL.handlers.lastY)) {
-//                         GOL.canvas.switchCell(position[0], position[1]);
-//                         GOL.handlers.lastX = position[0];
-//                         GOL.handlers.lastY = position[1];
-//                     }
-//                 }
-//             },
-//
-//
-//             /**
-//              *
-//              */
-//             keyboard : function(e) {
-//                 var event = e;
-//                 if (!event) {
-//                     event = window.event;
-//                 }
-//
-//                 if (event.keyCode === 67) { // Key: C
-//                     GOL.handlers.buttons.clear();
-//                 } else if (event.keyCode === 82 ) { // Key: R
-//                     GOL.handlers.buttons.run();
-//                 } else if (event.keyCode === 83 ) { // Key: S
-//                     GOL.handlers.buttons.step();
-//                 }
-//             },
-//
-//
-//             buttons : {
-//
-//                 /**
-//                  * Button Handler - Run
-//                  */
-//                 run : function() {
-//                     GOL.element.hint.style.display = 'none';
-//
-//                     GOL.running = !GOL.running;
-//                     if (GOL.running) {
-//                         GOL.nextStep();
-//                         document.getElementById('buttonRun').value = 'Stop';
-//                     } else {
-//                         document.getElementById('buttonRun').value = 'Run';
-//                     }
-//                 },
-//
-//
-//                 /**
-//                  * Button Handler - Next Step - One Step only
-//                  */
-//                 step : function() {
-//                     if (!GOL.running) {
-//                         GOL.nextStep();
-//                     }
-//                 },
-//
-//
-//                 /**
-//                  * Button Handler - Clear World
-//                  */
-//                 clear : function() {
-//                     if (GOL.running) {
-//                         GOL.clear.schedule = true;
-//                         GOL.running = false;
-//                         document.getElementById('buttonRun').value = 'Run';
-//                     } else {
-//                         GOL.cleanUp();
-//                     }
-//                 },
-//
-//
-//                 /**
-//                  * Button Handler - Remove/Add Trail
-//                  */
-//                 trail : function() {
-//                     GOL.element.messages.layout.innerHTML = GOL.trail.current ? 'Trail is Off' : 'Trail is On';
-//                     GOL.trail.current = !GOL.trail.current;
-//                     if (GOL.running) {
-//                         GOL.trail.schedule = true;
-//                     } else {
-//                         GOL.canvas.drawWorld();
-//                     }
-//                 },
-//
-//
-//                 /**
-//                  *
-//                  */
-//                 colors : function() {
-//                     GOL.colors.current = (GOL.colors.current + 1) % GOL.colors.schemes.length;
-//                     GOL.element.messages.layout.innerHTML = 'Color Scheme #' + (GOL.colors.current + 1);
-//                     if (GOL.running) {
-//                         GOL.colors.schedule = true; // Delay redraw
-//                     } else {
-//                         GOL.canvas.drawWorld(); // Force complete redraw
-//                     }
-//                 },
-//
-//
-//                 /**
-//                  *
-//                  */
-//                 grid : function() {
-//                     GOL.grid.current = (GOL.grid.current + 1) % GOL.grid.schemes.length;
-//                     GOL.element.messages.layout.innerHTML = 'Grid Scheme #' + (GOL.grid.current + 1);
-//                     if (GOL.running) {
-//                         GOL.grid.schedule = true; // Delay redraw
-//                     } else {
-//                         GOL.canvas.drawWorld(); // Force complete redraw
-//                     }
-//                 },
-//
-//
-//                 /**
-//                  * Button Handler - Export State
-//                  */
-//                 export_ : function() {
-//                     var i, j, url = '', cellState = '', params = '';
-//
-//                     for (i = 0; i < GOL.listLife.actualState.length; i++) {
-//                         cellState += '{"'+GOL.listLife.actualState[i][0]+'":[';
-//                         //cellState += '{"one":[';
-//                         for (j = 1; j < GOL.listLife.actualState[i].length; j++) {
-//                             cellState += GOL.listLife.actualState[i][j]+',';
-//                         }
-//                         cellState = cellState.substring(0, cellState.length - 1) + ']},';
-//                     }
-//
-//                     cellState = cellState.substring(0, cellState.length - 1) + '';
-//
-//                     if (cellState.length !== 0) {
-//                         url = (window.location.href.indexOf('?') === -1) ? window.location.href : window.location.href.slice(0, window.location.href.indexOf('?'));
-//
-//                         params = '?autoplay=0' +
-//                             '&trail=' + (GOL.trail.current ? '1' : '0') +
-//                             '&grid=' + (GOL.grid.current + 1) +
-//                             '&colors=' + (GOL.colors.current + 1) +
-//                             '&zoom=' + (GOL.zoom.current + 1) +
-//                             '&s=['+ cellState +']';
-//
-//                         document.getElementById('exportUrlLink').href = params;
-//                         document.getElementById('exportTinyUrlLink').href = 'http://tinyurl.com/api-create.php?url='+ url + params;
-//                         document.getElementById('exportUrl').style.display = 'inline';
-//                     }
-//                 }
-//
-//             }
-//
-//         },
-//
-//
-//         /** ****************************************************************************************************************************
-//          *
-//          */
-//
-//
-//
-//         /** ****************************************************************************************************************************
-//          *
-//          */
-//
-//
-//
-//         /** ****************************************************************************************************************************
-//          *
-//          */
-//         helpers : {
-//             urlParameters : null, // Cache
-//
-//
-//             /**
-//              * Return a random integer from [min, max]
-//              */
-//             random : function(min, max) {
-//                 return min <= max ? min + Math.round(Math.random() * (max - min)) : null;
-//             },
-//
-//
-//             /**
-//              * Get URL Parameters
-//              */
-//             getUrlParameter : function(name) {
-//                 if (this.urlParameters === null) { // Cache miss
-//                     var hash, hashes, i;
-//
-//                     this.urlParameters = [];
-//                     hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-//
-//                     for (i = 0; i < hashes.length; i++) {
-//                         hash = hashes[i].split('=');
-//                         this.urlParameters.push(hash[0]);
-//                         this.urlParameters[hash[0]] = hash[1];
-//                     }
-//                 }
-//
-//                 return this.urlParameters[name];
-//             },
-//
-//
-//             /**
-//              * Register Event
-//              */
-//             registerEvent : function (element, event, handler, capture) {
-//                 if (/msie/i.test(navigator.userAgent)) {
-//                     element.attachEvent('on' + event, handler);
-//                 } else {
-//                     element.addEventListener(event, handler, capture);
-//                 }
-//             },
-//
-//
-//             /**
-//              *
-//              */
-//             mousePosition : function (e) {
-//                 // http://www.malleus.de/FAQ/getImgMousePos.html
-//                 // http://www.quirksmode.org/js/events_properties.html#position
-//                 var event, x, y, domObject, posx = 0, posy = 0, top = 0, left = 0, cellSize = GOL.zoom.schemes[GOL.zoom.current].cellSize + 1;
-//
-//                 event = e;
-//                 if (!event) {
-//                     event = window.event;
-//                 }
-//
-//                 if (event.pageX || event.pageY) 	{
-//                     posx = event.pageX;
-//                     posy = event.pageY;
-//                 } else if (event.clientX || event.clientY) 	{
-//                     posx = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-//                     posy = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-//                 }
-//
-//                 domObject = event.target || event.srcElement;
-//
-//                 while ( domObject.offsetParent ) {
-//                     left += domObject.offsetLeft;
-//                     top += domObject.offsetTop;
-//                     domObject = domObject.offsetParent;
-//                 }
-//
-//                 domObject.pageTop = top;
-//                 domObject.pageLeft = left;
-//
-//                 x = Math.ceil(((posx - domObject.pageLeft)/cellSize) - 1);
-//                 y = Math.ceil(((posy - domObject.pageTop)/cellSize) - 1);
-//
-//                 return [x, y];
-//             }
-//         }
-//
-//     };
-//
-//
-//     /**
-//      * Init on 'load' event
-//      */
-//     GOL.helpers.registerEvent(window, 'load', function () {
-//         GOL.init();
-//     }, false);
-//
-// }());

@@ -1,5 +1,6 @@
 <div id="wrapper">
-
+    <h4>{{isEditMode? name: "New Configuration"}}</h4>
+    <p *ngIf="isEditMode">{{description}}</p>
     <canvas (mousedown)="onCanvasMouseDown($event)"
             (mouseup)="onCanvasMouseUp()"
             (mouseleave)="onCanvasMouseUp()"
@@ -26,6 +27,8 @@
         </form>
     </div>
 
+    <div (click)="saveConfiguration()" class="btn btn-primary">Save</div>
+
     <div class="box layout">
         <div class="subtitle">Layout</div>
             <input (click)="switchTrail()" type="button" value="Trail">
@@ -34,4 +37,4 @@
             <span id="layoutMessages"></span>
     </div>
 
-    </div>
+</div>
