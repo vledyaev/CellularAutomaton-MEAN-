@@ -12,7 +12,7 @@ var userRoutes = require('./routes/user');
 var configurationRoutes =require('./routes/configuration');
 
 var app = express();
-mongoose.connect('mongodb://admin:qwaszx@1@ds062059.mlab.com:62059/cellular_automatondb');
+mongoose.connect('mongodb://admin1:testpassword@ds062059.mlab.com:62059/cellular_automatondb');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
