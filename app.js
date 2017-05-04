@@ -6,6 +6,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
+var sslRedirect = require('heroku-ssl-redirect');
+
 var appRoutes = require('./routes/app');
 var messageRoutes = require('./routes/messages');
 var userRoutes = require('./routes/user');
@@ -25,6 +27,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// enable ssl redirect
+app.use(sslRedirect());
 
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
