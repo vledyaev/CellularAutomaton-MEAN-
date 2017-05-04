@@ -1,40 +1,69 @@
 <div id="wrapper">
     <h4>{{isEditMode? name: "New Configuration"}}</h4>
     <p *ngIf="isEditMode">{{description}}</p>
-    <canvas (mousedown)="onCanvasMouseDown($event)"
-            (mouseup)="onCanvasMouseUp()"
-            (mouseleave)="onCanvasMouseUp()"
-            (mousemove)="onCanvasMouseMove($event)"
-            #canvas width="901" height="433"></canvas>
+    <fieldset [disabled]="!isLoaded">
+        <canvas [ngClass]="{disabled: !isLoaded}" (mousedown)="onCanvasMouseDown($event)"
+                (mouseup)="onCanvasMouseUp()"
+                (mouseleave)="onCanvasMouseUp()"
+                (mousemove)="onCanvasMouseMove($event)"
+                #canvas width="901" height="433"></canvas>
 
-    <div class="cl">&nbsp;</div>
-    <div class="box">
-        <div class="subtitle">Running Information</div>
-        <p class="info">
-            <abbr title="Current Generation">Generation</abbr>: <span>{{generation}}</span> |
-            <abbr title="Number of live cells">Live cells</abbr>: <span >{{liveCells}}</span> |
-            <abbr title="Execution times: Algorithm / Canvas (Algorithm / Canvas Averages)">Step time</abbr>: <span>{{stepTime}}</span> ms </p>
-    </div>
+        <div class="box">
+            <div class="subtitle">Running Information</div>
+            <p class="info">
+                <abbr title="Current Generation">Generation</abbr>: <span>{{generation}}</span> |
+                <abbr title="Number of live cells">Live cells</abbr>: <span >{{liveCells}}</span> |
+                <abbr title="Execution times: Algorithm / Canvas (Algorithm / Canvas Averages)">Step time</abbr>: <span>{{stepTime}}</span> ms </p>
+        </div>
 
-    <div class="box controls">
-        <div class="subtitle">Controls</div>
-        <form action="">
-            <input (click)="run()" type="button" [value]="!isRunning?'Run':'Stop'" title="Key: R">
-            <input type="button" (click)="step()" value="Step" title="Key: S">
-            <input type="button" (click)="clearAll()"  value="Clear" title="Key: C">
-            <input type="button" value="Export" id="buttonExport">
-            <span id="exportUrl"> | <a id="exportUrlLink">Link</a> | <a id="exportTinyUrlLink" title="Tiny URL">Create micro URL</a></span>
-        </form>
-    </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Controls</h3>
+            </div>
+            <div>
+                <div class="btn-group" role="group" aria-label="...">
+                    <input class="btn btn-default" (click)="run()" type="button" [value]="!isRunning?'Run':'Stop'" title="Key: R">
+                    <input class="btn btn-default" type="button" (click)="step()" value="Step" title="Key: S">
+                    <input class="btn btn-default" type="button" (click)="loadInitialState()" value="To Initial State" title="Key: S">
+                    <input class="btn btn-default" *ngIf="isOwner()" type="button" (click)="clearAll()"  value="Clear" title="Key: C">
+                </div>
+            </div>
+        </div>
 
-    <div (click)="saveConfiguration()" class="btn btn-primary">Save</div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Layout</h3>
+            </div>
+            <div>
+                <div class="btn-group" role="group" aria-label="...">
+                    <input class="btn btn-default"  (click)="switchTrail()" type="button" value="Trail">
+                    <input class="btn btn-default"  (click)="switchGrid()" type="button" id="buttonGrid" value="Grid">
+                    <input class="btn btn-default"  (click)="switchColors()" type="button" id="buttonColors" value="Colors">
+                </div>
+            </div>
+        </div>
 
-    <div class="box layout">
-        <div class="subtitle">Layout</div>
-            <input (click)="switchTrail()" type="button" value="Trail">
-            <input (click)="switchGrid()" type="button" id="buttonGrid" value="Grid">
-            <input (click)="switchColors()" type="button" id="buttonColors" value="Colors">
-            <span id="layoutMessages"></span>
-    </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Management</h3>
+            </div>
+            <div>
+                <div class="btn-group" role="group" aria-label="...">
+                    <div (click)="saveConfiguration()" class="btn btn-primary">{{isOwner()&&isEditMode?'Edit':'Save'}}</div>
+                    <div *ngIf="canDelete()" (click)="delete()" class="btn btn-primary"> Delete</div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
 
+
+    <cool-loading-indicator [indicatorDelay]="0">
+        <div class="my-loading">
+            <div class="dimmer"></div>
+
+            <div class="loading-bg">
+                <img src="https://i1.wp.com/cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif"/>
+            </div>
+        </div>
+    </cool-loading-indicator>
 </div>

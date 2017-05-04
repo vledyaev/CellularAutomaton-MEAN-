@@ -12,7 +12,7 @@ import { AuthService } from "./auth.service";
 export class SigninComponent {
     myForm: FormGroup;
 
-    constructor(private authService: AuthService, private router: Router) {}
+    constructor(private authService: AuthService, public router: Router) {}
 
     onSubmit() {
         const user = new User(this.myForm.value.email, this.myForm.value.password);

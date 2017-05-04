@@ -5,10 +5,11 @@ import { Observable } from "rxjs";
 
 import { User } from "./user.model";
 import { ErrorService } from "../errors/error.service";
+import {Router} from "@angular/router";
 
 @Injectable()
 export class AuthService {
-    constructor(private http: Http, private errorService: ErrorService) {}
+    constructor(private http: Http, private errorService: ErrorService, private router: Router) {}
 
     signup(user: User) {
         const body = JSON.stringify(user);
@@ -34,6 +35,7 @@ export class AuthService {
 
     logout() {
         localStorage.clear();
+        this.router.navigate(['/signin']);
     }
 
     isLoggedIn() {

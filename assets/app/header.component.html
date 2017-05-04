@@ -10,16 +10,9 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li routerLinkActive="active"><a [routerLink]="['/messages']">Messenger</a></li>
-                <li routerLinkActive="active"><a [routerLink]="['/auth']">Authentication</a></li>
-                <li><a>Galery</a></li>
-                <li><a>Room</a></li>
-                <li routerLinkActive="active"><a [routerLink]="['/automaton']">New</a></li>
+                <li routerLinkActive="active"><a [routerLink]="['/configurations']">Configurations</a></li>
             </ul>
             <ul *ngIf="isLoggedIn()" class="nav navbar-nav navbar-right">
-                <li>
-                    <a>Management</a>
-                </li>
                 <li><a (click)="onLogout()">Log out</a></li>
             </ul>
             <ul *ngIf="!isLoggedIn()" class="nav navbar-nav navbar-right">

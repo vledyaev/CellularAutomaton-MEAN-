@@ -18,6 +18,11 @@ import {BootstrapModalModule} from "angular2-modal/plugins/bootstrap";
 import {ModalModule} from "angular2-modal";
 import {SaveConfigurationComponent} from "./gameOfLife/save-configuration.component";
 import {FormsModule} from "@angular/forms";
+import {ConfigurationPageComponent} from "./gameOfLife/configuration-page.component";
+import {NgxPaginationModule} from "ngx-pagination";
+import {CoolLoadingIndicatorModule} from "angular2-cool-loading-indicator";
+import {HttpClient} from "./customization/httpClient";
+import {AuthGuard} from "./customization/auth-guard";
 
 @NgModule({
     declarations: [
@@ -27,7 +32,8 @@ import {FormsModule} from "@angular/forms";
         ErrorComponent,
         HomeComponent,
         GameOfLifeComponent,
-        SaveConfigurationComponent
+        SaveConfigurationComponent,
+        ConfigurationPageComponent
     ],
     imports: [
         BrowserModule,
@@ -37,9 +43,11 @@ import {FormsModule} from "@angular/forms";
         AuthModule,
         ModalModule.forRoot(),
         BootstrapModalModule,
-        FormsModule
+        FormsModule,
+        NgxPaginationModule,
+        CoolLoadingIndicatorModule
     ],
-    providers: [AuthService, ErrorService,GOLConfigurationService],
+    providers: [AuthService, ErrorService,GOLConfigurationService,HttpClient, AuthGuard],
     bootstrap: [AppComponent],
     entryComponents: [ SaveConfigurationComponent ]
 })

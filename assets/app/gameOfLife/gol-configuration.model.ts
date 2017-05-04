@@ -1,3 +1,3 @@
 export class GOLConfiguration {
-    constructor(public name: string, public description: string, public state: number[][]) {}
+    constructor(public name: string, public description: string, public state: number[][], public id?:string) {}
 }

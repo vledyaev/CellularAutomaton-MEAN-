@@ -6,29 +6,79 @@
  /* tslint:disable */
 
 
-import * as import0 from './app.component.css.shim.ngstyle';
-import * as import1 from '@angular/core';
-import * as import2 from './app.component';
-const styles_AppComponent:any[] = [import0.styles];
-export const RenderType_AppComponent:import1.RendererType2 = import1.ɵcrt({
-  encapsulation: 0,
+import * as import0 from '@angular/core';
+import * as import1 from './header.component.ngfactory';
+import * as import2 from './header.component';
+import * as import3 from './auth/auth.service';
+import * as import4 from '@angular/router';
+import * as import5 from './errors/error.component.ngfactory';
+import * as import6 from './errors/error.component';
+import * as import7 from './errors/error.service';
+import * as import8 from 'angular2-modal/esm/overlay/overlay.directives';
+import * as import9 from 'angular2-modal/esm/overlay/overlay.service';
+import * as import10 from './app.component';
+const styles_AppComponent:any[] = ([] as any[]);
+export const RenderType_AppComponent:import0.RendererType2 = import0.ɵcrt({
+  encapsulation: 2,
   styles: styles_AppComponent,
   data: {}
 }
 );
-export function View_AppComponent_0(l:any):import1.ɵViewDefinition {
-  return import1.ɵvid(0,[
-    (l()(),import1.ɵeld(0,(null as any),(null as any),1,'h1',([] as any[]),(null as any),(null as any),(null as any),(null as any),(null as any))),
-    (l()(),import1.ɵted((null as any),['Hello World!']))
+export function View_AppComponent_0(l:any):import0.ɵViewDefinition {
+  return import0.ɵvid(0,[
+      (l()(),import0.ɵeld(0,(null as any),(null as any),9,'div',[[
+        'class',
+        'container body-content'
+      ]
+    ],(null as any),(null as any),(null as any),(null as any),(null as any))),
+    (l()(),import0.ɵted((null as any),['\n    '])),
+    (l()(),import0.ɵeld(0,(null as any),(null as any),1,'app-header',([] as any[]),(null as any),(null as any),(null as any),import1.View_HeaderComponent_0,import1.RenderType_HeaderComponent)),
+    import0.ɵdid(24576,(null as any),0,import2.HeaderComponent,[
+      import3.AuthService,
+      import4.Router
+    ]
+    ,(null as any),(null as any)),
+    (l()(),import0.ɵted((null as any),['\n    '])),
+    (l()(),import0.ɵeld(0,(null as any),(null as any),0,'hr',([] as any[]),(null as any),(null as any),(null as any),(null as any),(null as any))),
+    (l()(),import0.ɵted((null as any),['\n    '])),
+    (l()(),import0.ɵeld(8388608,(null as any),(null as any),1,'router-outlet',([] as any[]),(null as any),(null as any),(null as any),(null as any),(null as any))),
+    import0.ɵdid(73728,(null as any),0,import4.RouterOutlet,[
+      import4.RouterOutletMap,
+      import0.ViewContainerRef,
+      import0.ComponentFactoryResolver,
+      [
+        8,
+        (null as any)
+      ]
+
+    ]
+    ,(null as any),(null as any)),
+    (l()(),import0.ɵted((null as any),['\n'])),
+    (l()(),import0.ɵted((null as any),['\n'])),
+    (l()(),import0.ɵeld(0,(null as any),(null as any),1,'app-error',([] as any[]),(null as any),(null as any),(null as any),import5.View_ErrorComponent_0,import5.RenderType_ErrorComponent)),
+    import0.ɵdid(57344,(null as any),0,import6.ErrorComponent,[import7.ErrorService],(null as any),(null as any)),
+    (l()(),import0.ɵted((null as any),['\n'])),
+      (l()(),import0.ɵeld(8388608,(null as any),(null as any),1,'span',[[
+        'defaultOverlayTarget',
+        ''
+      ]
+    ],(null as any),(null as any),(null as any),(null as any),(null as any))),
+    import0.ɵdid(73728,(null as any),0,import8.DefaultOverlayTarget,[
+      import9.Overlay,
+      import0.ViewContainerRef
+    ]
+    ,(null as any),(null as any))
+  ]
+  ,(ck,v) => {
+    ck(v,12,0);
+  },(null as any));
+}
+function View_AppComponent_Host_0(l:any):import0.ɵViewDefinition {
+  return import0.ɵvid(0,[
+    (l()(),import0.ɵeld(0,(null as any),(null as any),1,'my-app',([] as any[]),(null as any),(null as any),(null as any),View_AppComponent_0,RenderType_AppComponent)),
+    import0.ɵdid(24576,(null as any),0,import10.AppComponent,([] as any[]),(null as any),(null as any))
   ]
   ,(null as any),(null as any));
 }
-function View_AppComponent_Host_0(l:any):import1.ɵViewDefinition {
-  return import1.ɵvid(0,[
-    (l()(),import1.ɵeld(0,(null as any),(null as any),1,'my-app',([] as any[]),(null as any),(null as any),(null as any),View_AppComponent_0,RenderType_AppComponent)),
-    import1.ɵdid(24576,(null as any),0,import2.AppComponent,([] as any[]),(null as any),(null as any))
-  ]
-  ,(null as any),(null as any));
-}
-export const AppComponentNgFactory:import1.ComponentFactory<import2.AppComponent> = import1.ɵccf('my-app',import2.AppComponent,View_AppComponent_Host_0,{},{},([] as any[]));
-//# sourceMappingURL=data:application/json;base64,eyJmaWxlIjoiRDovRHJvcGJveC9NYWdpc3RyYWN5L01FQU4vQ2VsbHVsYXJBdXRvbWF0b24tTUVBTi0vYXNzZXRzL2FwcC9hcHAuY29tcG9uZW50Lm5nZmFjdG9yeS50cyIsInZlcnNpb24iOjMsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIm5nOi8vL0Q6L0Ryb3Bib3gvTWFnaXN0cmFjeS9NRUFOL0NlbGx1bGFyQXV0b21hdG9uLU1FQU4tL2Fzc2V0cy9hcHAvYXBwLmNvbXBvbmVudC50cyIsIm5nOi8vL0Q6L0Ryb3Bib3gvTWFnaXN0cmFjeS9NRUFOL0NlbGx1bGFyQXV0b21hdG9uLU1FQU4tL2Fzc2V0cy9hcHAvYXBwLmNvbXBvbmVudC5odG1sIiwibmc6Ly8vRDovRHJvcGJveC9NYWdpc3RyYWN5L01FQU4vQ2VsbHVsYXJBdXRvbWF0b24tTUVBTi0vYXNzZXRzL2FwcC9hcHAuY29tcG9uZW50LnRzLkFwcENvbXBvbmVudF9Ib3N0Lmh0bWwiXSwic291cmNlc0NvbnRlbnQiOlsiICIsIjxoMT5IZWxsbyBXb3JsZCE8L2gxPiIsIjxteS1hcHA+PC9teS1hcHA+Il0sIm1hcHBpbmdzIjoiQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7SUNBQTtJQUFJOzs7Ozs7SUNBSjtnQkFBQTs7OzsifQ==
+export const AppComponentNgFactory:import0.ComponentFactory<import10.AppComponent> = import0.ɵccf('my-app',import10.AppComponent,View_AppComponent_Host_0,{},{},([] as any[]));
+//# sourceMappingURL=data:application/json;base64,eyJmaWxlIjoiQzovVXNlcnMvdi5sZWR5YWV2L0RvY3VtZW50cy9Qcm9qZWN0cy9DZWxsdWxhckF1dG9tYXRvbi1NRUFOLS9hc3NldHMvYXBwL2FwcC5jb21wb25lbnQubmdmYWN0b3J5LnRzIiwidmVyc2lvbiI6Mywic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsibmc6Ly8vQzovVXNlcnMvdi5sZWR5YWV2L0RvY3VtZW50cy9Qcm9qZWN0cy9DZWxsdWxhckF1dG9tYXRvbi1NRUFOLS9hc3NldHMvYXBwL2FwcC5jb21wb25lbnQudHMiLCJuZzovLy9DOi9Vc2Vycy92LmxlZHlhZXYvRG9jdW1lbnRzL1Byb2plY3RzL0NlbGx1bGFyQXV0b21hdG9uLU1FQU4tL2Fzc2V0cy9hcHAvYXBwLmNvbXBvbmVudC5odG1sIiwibmc6Ly8vQzovVXNlcnMvdi5sZWR5YWV2L0RvY3VtZW50cy9Qcm9qZWN0cy9DZWxsdWxhckF1dG9tYXRvbi1NRUFOLS9hc3NldHMvYXBwL2FwcC5jb21wb25lbnQudHMuQXBwQ29tcG9uZW50X0hvc3QuaHRtbCJdLCJzb3VyY2VzQ29udGVudCI6WyIgIiwiPGRpdiBjbGFzcz1cImNvbnRhaW5lciBib2R5LWNvbnRlbnRcIj5cbiAgICA8YXBwLWhlYWRlcj48L2FwcC1oZWFkZXI+XG4gICAgPGhyPlxuICAgIDxyb3V0ZXItb3V0bGV0Pjwvcm91dGVyLW91dGxldD5cbjwvZGl2PlxuPGFwcC1lcnJvcj48L2FwcC1lcnJvcj5cbjxzcGFuIGRlZmF1bHRPdmVybGF5VGFyZ2V0Pjwvc3Bhbj4iLCI8bXktYXBwPjwvbXktYXBwPiJdLCJtYXBwaW5ncyI6IkFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7TUNBQTtRQUFBO1FBQUE7TUFBQTtJQUFBO0lBQW9DO0lBQ2hDO2dCQUFBOzs7SUFBQTtLQUFBO0lBQXlCO0lBQ3pCO0lBQUk7SUFDSjtnQkFBQTs7OztNQUFBO1FBQUE7UUFBQTtNQUFBOztJQUFBO0tBQUE7SUFBK0I7SUFDN0I7SUFDTjtnQkFBQTtJQUF1QjtNQUN2QjtRQUFBO1FBQUE7TUFBQTtJQUFBO2dCQUFBOzs7SUFBQTtLQUFBOzs7SUFEQTs7Ozs7SUNMQTtnQkFBQTs7OzsifQ==

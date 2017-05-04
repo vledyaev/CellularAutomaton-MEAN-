@@ -1,5 +1,6 @@
 import { Component } from "@angular/core";
 import {AuthService} from "../auth/auth.service";
+import {Router} from "@angular/router";
 
 @Component({
     selector: 'app-home',
@@ -7,9 +8,13 @@ import {AuthService} from "../auth/auth.service";
 
 })
 export class HomeComponent {
-    constructor(private authService: AuthService) {}
+    constructor(private authService: AuthService, private router: Router) {}
 
-    isLoggedIn() {
-        return this.authService.isLoggedIn();
+    newConfiguration(){
+        if(!this.authService.isLoggedIn()){
+            this.router.navigate(['/signin']);
+        }else{
+            this.router.navigate(['/configurations']);
+        }
     }
 }

@@ -7,7 +7,7 @@ import {GOLConfiguration} from "./gol-configuration.model";
 import { NgForm } from "@angular/forms";
 
 export class SaveConfigurationModalContext extends BSModalContext {
-    constructor(public state: number[][], public name: string,public description: string) {
+    constructor(public state: number[][], public name?: string,public description?: string,public id?: string, public isEditMode?: boolean) {
         super();
     }
 }
@@ -51,24 +51,35 @@ export class SaveConfigurationComponent implements CloseGuard, ModalComponent<Sa
     }
 
     onSave(){
-         let configuration = new GOLConfiguration(this.context.name,this.context.description, this.context.state);
-         this.golConfigurationService.saveConfiguration(configuration).subscribe(
-             ()=>
-                 this.modal.alert()
-                     .size('sm')
-                     .title("Info")
-                     .message("Configuration has been saved.")
-                     .open()
-                     .then((dialog) => dialog.result)
-                     .then(() => this.dialog.close({name: this.context.name, description: this.context.description}))
-         );
-    }
+         let configuration = new GOLConfiguration(this.context.name,this.context.description, this.context.state,this.context.id);
+         if(this.context.isEditMode){
+             this.golConfigurationService.editConfiguration(configuration).then(
+                 (response)=>
+                     this.modal.alert()
+                         .size('sm')
+                         .title("Info")
+                         .message("Configuration has been updated.")
+                         .open()
+                         .then((dialog) => dialog.result)
+                         .then(() => {
+                            this.dialog.close(<any>{name: this.context.name, description: this.context.description});
+                            this.context = null;
+                         })
+             ).catch(() => console.log("Error"));
+         }else{
+             this.golConfigurationService.saveConfiguration(configuration).then(
+                 (response)=>
+                     this.modal.alert()
+                         .size('sm')
+                         .title("Info")
+                         .message("Configuration has been saved.")
+                         .open()
+                         .then((dialog) => dialog.result)
+                         .then(() =>{
+                             this.dialog.close(<any>{name: this.context.name, description: this.context.description, id: response.obj._id, authorId: response.obj.user._id, authorName: response.obj.user.firstName + " " + response.obj.user.lastName })
+                             this.context = null;
+                         }));
+         }
 
-    // beforeDismiss(): boolean {
-    //     return true;
-    // }
-    //
-    //  beforeClose(): boolean {
-    //      return true;
-    //  }
+    }
 }

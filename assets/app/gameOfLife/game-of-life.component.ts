@@ -1,5 +1,5 @@
 
-import {Component, OnInit, ViewChild} from "@angular/core";
+import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild} from "@angular/core";
 import {ListLife} from "./listLife";
 import {GOLConfigurationService} from "./gol-configuration.service";
 import {BSModalContext, Modal} from "angular2-modal/plugins/bootstrap";
@@ -7,20 +7,74 @@ import { SaveConfigurationComponent } from './save-configuration.component';
 import {overlayConfigFactory} from "angular2-modal";
 import {OVERLAY_PROVIDERS} from "@angular/material";
 import {ActivatedRoute} from "@angular/router";
+import {ConfigurationListItemModel} from "./congifuration-list-item.model";
+import {CoolLoadingIndicator} from "angular2-cool-loading-indicator";
 
 @Component({
-    selector: 'app-automaton',
+    selector: 'app-configuration',
     templateUrl: './game-of-life.component.html',
-    providers: [Modal,OVERLAY_PROVIDERS]
+    providers: [Modal,OVERLAY_PROVIDERS],
+    styles: [`
+        .my-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 100%;
+
+            text-align: center;
+        }
+
+        .my-loading .dimmer {
+            position: absolute;
+
+            top: 0;
+            left: 0;
+
+            background-color: #000;
+            opacity: 0.5;
+
+            width: 100%;
+            height: 100%;
+        }
+
+        .my-loading .loading-bg {
+            position: absolute;
+            display: inline-block;
+
+            top: 50%;
+            transform: translateY(-50%);
+
+            padding: 20px;
+
+            background-color: #fff;
+            border-radius: 15px;
+            height: 50px;
+            width: 50px;
+            text-align: center;
+        }
+        
+        .disabled {
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+    `]
 })
-export class GameOfLifeComponent implements  OnInit{
+export class GameOfLifeComponent implements  OnInit, OnChanges{
+
+
 
     //<editor-fold desc="Properties">
 
     name: string;
     description: string;
-    id: string;
+    authorId: string;
+    @Input() id: string;
+    @Output() onConfigurationCreated = new EventEmitter<ConfigurationListItemModel>();
+    @Output() onConfigurationDeleted= new EventEmitter();
 
+    isLoaded: boolean = false;
     isEditMode: boolean = false;
 
     context : CanvasRenderingContext2D;
@@ -155,14 +209,75 @@ export class GameOfLifeComponent implements  OnInit{
     //<editor-fold desc="Saving">
 
     saveConfiguration(){
-        return this.modal.open(SaveConfigurationComponent, overlayConfigFactory({ state: this.listLife.actualState, name:"", description:""}, BSModalContext))
-            .then(dialog => dialog.result)
+        let name: string = '';
+        let description: string = '';
+        let showNotOwnerPopup: boolean = false;
+        if(this.isEditMode){
+            if(this.isOwner()){
+                name = this.name;
+                description = this.description;
+            }else{
+                showNotOwnerPopup = true;
+            }
+        }
+        if(showNotOwnerPopup){
+            this.modal.confirm()
+                .title("Info")
+                .message("You are not an owner of current configuration. Do you want to create your own?")
+                .open()
+                .then(dialog => dialog.result)
+                .then(result => {
+                    this.openSaveConfigurationDialog(name, description)
+                })
+        }else{
+            return this.openSaveConfigurationDialog(name, description, this.id)
+        }
+    }
+
+    canDelete(){
+        return localStorage.getItem('userId') == this.authorId
+    }
+
+    delete(){
+        this.modal.confirm()
+            .title("Confirmation")
+            .message("Are you sure you want to delete this configuration?")
+            .open()
+            .then((dialog) => dialog.result)
+            .then((result) =>{
+                if(result){
+                    this.golConfigurationService.deleteMessage(this.id).then(() => {
+                        this.onConfigurationDeleted.emit();
+                        this.modal.alert().size('sm')
+                            .title("Info")
+                            .message("Configuration has been deleted.")
+                            .open();
+                    });
+                }
+            })
+
+
+    }
+
+    openSaveConfigurationDialog(name: string, description: string, id?: string){
+        let isEditMode = this.isEditMode && this.isOwner();
+        this.modal.open(SaveConfigurationComponent, overlayConfigFactory({ state: this.listLife.actualState, name: name, description: description, isEditMode: isEditMode, id: id}, BSModalContext))
+            .then((dialog: any) => dialog.result)
             .then(result => {
                 if(result){
-                    this.isEditMode=true;
                     this.name = result.name;
                     this.description = result.description;
-                    console.log(result);
+                    if(!this.isOwner() && this.isEditMode || !this.isOwner() && !this.id){
+                        this.onConfigurationCreated.emit(<ConfigurationListItemModel>{
+                            id: result.id,
+                            name: this.name,
+                            description: this.description,
+                            author: result.authorName,
+                            authorId: result.authorId
+                        });
+                    }else{
+                        this.isEditMode=true;
+                    }
                 }
             });
     }
@@ -174,32 +289,20 @@ export class GameOfLifeComponent implements  OnInit{
 
     ngOnInit(){
         try {
-            this.canvas = this.htmlCanvas.nativeElement;
-            this.canvas.onselectstart = function(e){e.preventDefault();return false;};
-            this.context = this.canvas.getContext("2d");
-            this.cellSize = this.zoom.schemes[this.zoom.current].cellSize;
-            this.rowsCount = this.zoom.schemes[this.zoom.current].rows;
-            this.columnsCount = this.zoom.schemes[this.zoom.current].columns;
-            this.cellSpace = 1;
-            this.listLife = new ListLife();   // Reset/init algorithm
-            this.route.params.subscribe(params => {
-                this.id = params['id']; // (+) converts string 'id' to a number
-                if(this.id){
-                    this.isEditMode = true;
-                    this.golConfigurationService.getConfiguration(this.id).subscribe(
-                        result =>{
-                            this.loadState(JSON.parse(result.obj.state));
-                            this.name = result.obj.name;
-                            this.description = result.obj.description;
-                            console.log(result);
-                            this.prepare();
-                        });
-                }else{
-                    this.clearWorld();
-                    console.log("prepared");
-                    this.prepare();
-                }
-            });
+            this.initialize();
+            if(!this.id){
+                this.route.params.subscribe(params => {
+                    this.id = params['id'];
+                    if(this.id){
+                        this.loadInitialState();
+                    }else{
+                        this.clearWorld();
+                        console.log("prepared");
+                        this.prepare();
+                    }
+                });
+            }
+
             //this.loadConfig();      // Load config from URL (autoplay, colors, zoom, ...)
             //this.loadState();       // Load state from URL
         } catch (e) {
@@ -207,12 +310,54 @@ export class GameOfLifeComponent implements  OnInit{
         }
     }
 
+    initialize(){
+        if(!this.canvas){
+            this.canvas = this.htmlCanvas.nativeElement;
+            this.canvas.onselectstart = function(e){e.preventDefault();return false;};
+            this.context = this.canvas.getContext("2d");
+            this.cellSize = this.zoom.schemes[this.zoom.current].cellSize;
+            this.rowsCount = this.zoom.schemes[this.zoom.current].rows;
+            this.columnsCount = this.zoom.schemes[this.zoom.current].columns;
+            this.cellSpace = 1;
+        }
+    }
+
+    ngOnChanges(){
+        this.initialize();
+        this.isRunning = false;
+        if(this.id){
+            this.isLoaded = false;
+            this.loadInitialState();
+        }else{
+            this.isLoaded = true;
+            this.listLife = new ListLife();   // Reset/init algorithm
+            this.prepare();
+        }
+    }
+
+    isOwner() {
+        return localStorage.getItem('userId') == this.authorId;
+    }
+
+    loadInitialState(){
+        this.listLife = new ListLife();
+        this.isEditMode = true;
+        this.golConfigurationService.getConfiguration(this.id).then(
+            result =>{
+                this.loadState(JSON.parse(result.obj.state));
+                this.name = result.obj.name;
+                this.description = result.obj.description;
+                this.authorId = result.obj.user;
+                console.log(result);
+                this.prepare();
+                this.isLoaded = true;
+            });
+    }
+
     loadState(state: number[][]){
         let i, j, y;
         for (i = 0; i < state.length; i++) {
             for (j = 1; j < state[i].length; j++) {
-                console.log(state[i][j]);
-                console.log(state[i][0]);
                 this.listLife.addCell(state[i][j], state[i][0],this.listLife.actualState);
             }
         }
